@@ -6,11 +6,16 @@
 #include "rtc/rtc.h"
 #include "lcd/nokia5110.h"
 
+#define N_BUTTONS 4
+
 uint8_t *idp; // Time storage pointer
 
 void setup(void);
 void clear_time(void);
 void get_time(void);
+void arduino_blink(void);
+void on_button(const uint8_t button);
+void scan_buttons(void);
 
 int main(void)
 {
@@ -24,8 +29,13 @@ int main(void)
 	
 	setup();
 	
+	nokia_lcd_write_string("chisti govno", 1);
+	nokia_lcd_render();
+	
 	for (;;) //  ;_;
 	{
+		arduino_blink();
+		
 		// Increment seconds
 		get_time();
 		if (current_second_value != *idp)
@@ -51,48 +61,36 @@ int main(void)
 		
 		nokia_lcd_render();
 		
-		_delay_ms(200);
+		for (uint8_t i = 0; i < 10; ++i)
+		{
+			_delay_ms(20);
+			scan_buttons();
+		}
 	}
-	
-	for (;;)
-	{
-		nokia_lcd_set_cursor(10, 35);
-		get_time();
-		
-		nokia_lcd_write_char('0' + *(idp + 2) / 10, 1);
-		nokia_lcd_write_char('0' + *(idp + 2) % 10, 1);
-		nokia_lcd_write_char(':', 1);
-		nokia_lcd_write_char('0' + *(idp + 1) / 10, 1);
-		nokia_lcd_write_char('0' + *(idp + 1) % 10, 1);
-		nokia_lcd_write_char(':', 1);
-		nokia_lcd_write_char('0' + *(idp + 0) / 10, 1);
-		nokia_lcd_write_char('0' + *(idp + 0) % 10, 1);
-		_delay_ms(100);
-    }
 	
 	return 0;
 }
 
 void setup(void)
 {
-	DDRB = 0xFF;
-	DDRC = 0xFF;
-	DDRD = 0xFF;
+	DDRB = 0x00;
+	DDRC = 0x00;
+	DDRD = 0x00;
 	
 	PORTB = 0x00;
 	PORTC = 0x00;
 	PORTD = 0x00;
 	
-	I2CInit(); // I2C
-	/*
-	DDRC = 0x00;		//Эта бурда нужна для
-	DDRD &= ~_BV(1);	//приведения в порядок
-	DDRD &= ~_BV(3);	//портов МК после инициализации
+	// Shift-register
+	DDRD |= 0b00001100;
+	PORTD |= (1 << 4); // Pull-up for button-reading pin
 	
-	PORTC = 0xFF;
-	PORTD |= _BV(1);
-	PORTD |= _BV(3);	//Конец бурды
-	*/
+	DDRC |= (1 << 3);  // Set sound pin as output
+	PORTC &= (1 << 3); // Sound turned off
+	
+	I2CInit(); // I2C (for RTC)
+	
+	nokia_lcd_init(); // LCD screen
 	
 	clear_time();
 	
@@ -101,6 +99,14 @@ void setup(void)
 	DS1307Read(0x00, &t_start);
 	t_start &= ~(1 << 7); // Set 7th bit 0
 	DS1307Write(0x00,t_start);
+}
+
+void arduino_blink(void)
+{
+	DDRB |= (1 << 5);
+	PORTB |= (1 << 5);
+	_delay_ms(5);
+	PORTB &= ~(1 << 5);
 }
 
 // Set time to 0, if it's not 0
@@ -123,33 +129,40 @@ void get_time(void)
 // Scan all buttons
 void scan_buttons(void)
 {
-	// Открываю latch
-	// (C0 HIGH)
-	PORTC |= _BV(PC0);
-	_delay_us(500);
-	
 	// Set 0 and move it through 16 positions,
 	// checking every button, if it's pressed.
-	for (uint8_t i = 0; i < 16; ++ i)
+	
+	// D2 data
+	// D3 clock
+	// D4 read back
+	
+	for (uint8_t i = 0; i < N_BUTTONS; ++ i)
 	{
 		// Data
-		if (i) PORTC |= _BV(PC2);
-		else PORTC &= ~_BV(PC2); // If position is first, set 0
-		_delay_us(200);
+		if (i) PORTD |= _BV(PD2);
+		else PORTD &= ~_BV(PD2); // If position is first, set 0
+		_delay_us(100);
 		
 		// clock high
-		PORTC |= _BV(PC1);
-		_delay_us(200);
+		PORTD |= _BV(PD3);
+		_delay_us(100);
 		
 		// Data and clock low
-		PORTC &= 0b11111001;
+		PORTD &= 0b11110011;
 		
 		// If button pressed
-		if (PORTD/*<inpit pin> is clear*/) /*on_button(i)*/;
+		if (bit_is_clear(PIND, 4)) on_button(i);
 	}
-	
-	// Закрываю latch
-	// (B2 LOW)
-	PORTC |= _BV(PC0);
-	_delay_us(500);
+}
+
+void on_button(const uint8_t button)
+{
+	char button_str[20];
+	itoa(button, button_str, 10);
+	nokia_lcd_set_cursor(10, 30);
+	nokia_lcd_write_string("Button pressed: ", 1);
+	nokia_lcd_write_string(button_str, 1);
+	nokia_lcd_render();
+	_delay_ms(1000);
+	nokia_lcd_clear();
 }

@@ -3,4 +3,5 @@ Build/prog
 Build/*.hex
 Build/*.o
 Tamagotchi-Atmega8.kdev4
-
+.directory
+Tamagotchi.kdev4

@@ -1,15 +1,14 @@
 #include <avr/io.h>
+#include <util/delay.h>
 
-#include "../timeout.h"
 #include "rtc.h"
 
 // Функция инициализация шины TWI
 void I2CInit(void)
 {
 	// настройка TWI модуля
-	TWBR = 2;
+	TWBR = 0x48; // 100 мгц битрейт
 	TWSR = (1 << TWPS1)|(1 << TWPS0); // Предделитель на 64
-	TWCR |= (1 << TWEN); // Включение модуля TWI
 }
 
 void I2CStart(void)
@@ -17,13 +16,13 @@ void I2CStart(void)
 	// Передача условия СТАРТ
 	TWCR = (1 << TWINT)|(1 << TWEN)|(1 << TWSTA);
 	// Ожидание установки флага TWINT
-	while(!(TWCR & (1 << TWINT))) _delay_us(10);
+	while(!(TWCR & (1 << TWINT)));
 }
 
 void I2CStop(void)
 {
 	TWCR = (1 << TWINT)|(1 << TWEN)|(1 << TWSTO); // Передача условия СТОП
-	while(TWCR & (1 << TWSTO)) _delay_us(10); // Ожидание завершения передачи условия СТОП
+	while(TWCR & (1 << TWSTO)); // Ожидание завершения передачи условия СТОП
 }
 
 // Функция записи данных по шине
@@ -31,7 +30,7 @@ uint8_t I2CWriteByte(uint8_t data)
 {
 	TWDR = data; // Загрузка данных в TWDR 
 	TWCR = (1 << TWEN)|(1 << TWINT); // Сброс флага TWINT для начала передачи данных
-	while(!(TWCR & (1 << TWINT))) _delay_us(10); // Ожидание завершения передачи
+	while(!(TWCR & (1 << TWINT))); // Ожидание завершения передачи
 	// Проверка статуса
 	if((TWSR & 0xF8) == 0x18 || (TWSR & 0xF8) == 0x28 || (TWSR & 0xF8) == 0x40)
 	{
@@ -60,7 +59,7 @@ uint8_t I2CReadByte(uint8_t *data, uint8_t ack)
 	}
 	// Разрешение приема данных после сброса TWINT
 	TWCR |= (1 << TWINT);
-	while(!(TWCR & (1 << TWINT))) _delay_us(10); // Ожидание установки флага TWINT
+	while(!(TWCR & (1 << TWINT))); // Ожидание установки флага TWINT
 	// Проверка статуса
 	if((TWSR & 0xF8) == 0x58 || (TWSR & 0xF8) == 0x50)
 	{

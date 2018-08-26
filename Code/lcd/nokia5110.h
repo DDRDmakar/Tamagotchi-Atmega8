@@ -14,7 +14,6 @@
 #ifndef __NOKIA_5110_H__
 #define __NOKIA_5110_H__
 
-#include "../timeout.h"
 #include <avr/pgmspace.h>
 #include <stdint.h>
 

@@ -13,7 +13,7 @@ EFUSE = 0x00
 
 CC   = avr-gcc
 DIR  = ../Code/
-CFLAGS := -mmcu=$(MMCU_GCC) -Os -std=c99 -DF_CPU=$(FREQ_CPU)UL
+CFLAGS := -mmcu=$(MMCU_GCC) -Os -pedantic -Wextra -Wall -std=c11 -DF_CPU=$(FREQ_CPU)UL
 CFLAGS_AVRDUDE = -c $(INTERFACE) -p $(MMCU_AVRDUDE) -P $(DEVICE) -b $(SPEED)
 
 prog: main.o lcd.o rtc.o time.o

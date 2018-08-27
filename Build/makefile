@@ -19,7 +19,7 @@ CFLAGS_AVRDUDE = -c $(INTERFACE) -p $(MMCU_AVRDUDE) -P $(DEVICE) -b $(SPEED)
 prog: main.o lcd.o rtc.o time.o
 	$(CC) $(CFLAGS) -o prog main.o lcd.o rtc.o time.o
 
-main.o: $(DIR)main.c $(DIR)defines.h $(DIR)rtc/rtc.h $(DIR)lcd/nokia5110.h
+main.o: $(DIR)main.c $(DIR)main.h $(DIR)defines.h $(DIR)rtc/rtc.h $(DIR)lcd/nokia5110.h
 	$(CC) $(CFLAGS) -c $(DIR)main.c
 
 rtc.o: $(DIR)rtc/rtc.c $(DIR)rtc/rtc.h

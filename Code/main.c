@@ -2,34 +2,30 @@
 #include <avr/io.h>
 #include <util/delay.h>
 #include <stdlib.h>
+#include <avr/interrupt.h>
 
 #include "rtc/rtc.h"
 #include "lcd/nokia5110.h"
 #include "time.h"
+#include "main.h"
 #include "defines.h"
 
+uint8_t *idp; // Time storage pointer
+uint64_t longtime; // Absolute seconds count
 
 void setup(void);
-// Values order in time array
-// [second] [minute] [hour] [day] [month] [year] [week]
-uint8_t *idp; // Time storage pointer
-
-uint64_t longtime;  // Absolute seconds count
-
-unsigned int level; // Tamagochi creature level (from 0 to N)
-
-int health; // Creature health (from -6 to 6)
-int food;   // Creature hunger level (from -6 to 6) -6=hungry 6=fed
-int mood;   // Creature mood level (from -6 to 6)
-
 
 
 int main(void)
 {
+	longtime = 0;
+	
 	// Time storage
 	// second minute hour day month year week
 	uint8_t timedigits[7] = {0, 0, 0, 0, 0, 0, 0};
 	idp = timedigits;
+	
+	Tama_state state;
 	
 	setup();
 	
@@ -40,11 +36,12 @@ int main(void)
 	for (;;) //  ;_;
 	{
 		// Increment seconds
-		get_time();
+		// get_time();
 		
-		_delay_ms(1000);
-		++longtime;
-		
+		_delay_ms(100);
+		PORTC |= _BV(PC0);
+		_delay_ms(1);
+		PORTC &= ~_BV(PC0);
 		
 		// =================== DEBUG
 		// Display time
@@ -53,11 +50,11 @@ int main(void)
 		nokia_lcd_set_cursor(10, 20);
 		nokia_lcd_write_string(ltm, 1);
 		
-		if (health == -6) /*on_illness()*/;
+		//if (state.health == -6) /*on_illness()*/;
 		
-		if (mood < 0) /*on_sad()*/;
+		//if (state.mood < 0) /*on_sad()*/;
 		
-		if (food < 0) /*on_hunger()*/;
+		//if (state.food < 0) /*on_hunger()*/;
 		nokia_lcd_render();
 	}
 	
@@ -111,15 +108,34 @@ void setup(void)
 	DDRD =  0xD3; // 11010011
 	PORTD = 0x0C; // 00001100
 	
-	I2CInit(); // I2C (for RTC)
+	sei(); //  Enable global interrupts
 	
 	nokia_lcd_init(); // LCD screen
+	
+	/*****************TODO RTC***********************/
+	
+	I2CInit(); // I2C (for RTC)
 	
 	// Clock start
 	uint8_t t_start;
 	DS1307Read(0x00, &t_start);
 	t_start &= ~(1 << 7); // Set 7th bit 0
 	DS1307Write(0x00, t_start);
+	
+	/************************************************/
+	
+	// Internal interrupt instead of RTC
+	
+	TCCR1A = 0;
+	TCCR1B |= (1 << WGM12); // CTC timer mode
+	TIMSK1 |= (1 << OCIE1A); // Enable interrupts
+	OCR1AH = 0x3D; // Number to compare with
+	OCR1AL = 0x09; // 16000000 / 1024 = 15625 = 0x3D09
+	TCCR1B |= (1 << CS10)|(1 << CS12); // divide F_CPU by 1024
+	
+	
+	/************************************************/
+	
 	
 	// Blink leds on startup
 	_delay_ms(250);
@@ -135,3 +151,12 @@ void setup(void)
 	_delay_ms(250);
 }
 
+ISR (TIMER1_COMPA_vect) // Every second interrupt
+{
+	// Increment time variable
+	++longtime;
+	
+	PORTC |= _BV(PC1);
+	_delay_ms(1);
+	PORTC &= ~_BV(PC1);
+} 

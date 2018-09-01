@@ -22,5 +22,9 @@ void menu_render(void);
 void on_menu(Menu* menu);
 
 uint8_t display_info(void);
+uint8_t display_shower(void);
+uint8_t choose_food(void);
+uint8_t display_healing(void);
+uint8_t play_with_creature(void);
 
 #endif

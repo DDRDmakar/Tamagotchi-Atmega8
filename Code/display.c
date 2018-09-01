@@ -41,7 +41,11 @@ void display_picture_transparent(const uint8_t* pgm_bytes, unsigned x, unsigned 
 	{
 		for (uint8_t j = 0x80; j > 0; j >>= 1) // iterate through bits
 		{
-			nokia_lcd_set_pixel(x + column_counter_x, y + row_counter_y, pgm_read_byte(&pgm_bytes[i]) & j);
+			if (
+				(pgm_read_byte(&pgm_bytes[i]) & j) &&
+				(x + column_counter_x < SCREEN_X) &&
+				(y + row_counter_y < SCREEN_Y)
+			) nokia_lcd_set_pixel(x + column_counter_x, y + row_counter_y, 1);
 			++column_counter_x;
 			if (column_counter_x >= frame_x)
 			{

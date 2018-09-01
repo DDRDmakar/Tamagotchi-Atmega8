@@ -33,7 +33,8 @@ int main(void)
 	const uint16_t randarr[RANDOM_ARRAY_SIZE] = {57925, 23685, 36358, 39954, 25669, 9664, 55594, 8926, 3764, 61085, 35285, 57944, 20421, 52830, 50818, 20167, 32015, 1634, 43969, 64642, 29894, 39401, 15811, 45388, 25878, 530, 11598, 54822, 34968, 64956, 5101, 24209, 36461, 22856, 21265, 33972, 23488, 58118, 26648, 38519, 1651, 47372, 18825, 2863, 64657, 47348, 12934, 40169, 65054, 48949 };
 	RAND = randarr;
 	
-	Menu menu_main_children[4] = {
+	// Main menu nodes
+	Menu menu_main_children[5] = {
 		{
 			.action = 0,
 			.text = "Info",
@@ -46,21 +47,28 @@ int main(void)
 			.text = "Feed me",
 			.children = NULL,
 			.n_children = 0,
-			.f = NULL
+			.f = choose_food
 		},
 		{
 			.action = 0,
 			.text = "Wash me",
 			.children = NULL,
 			.n_children = 0,
-			.f = NULL
+			.f = display_shower
 		},
 		{
 			.action = 0,
 			.text = "Heal me",
 			.children = NULL,
 			.n_children = 0,
-			.f = NULL
+			.f = display_healing
+		},
+		{
+			.action = 0,
+			.text = "Play wth me", // max 11 letters
+			.children = NULL,
+			.n_children = 0,
+			.f = play_with_creature
 		}
 	};
 	
@@ -70,7 +78,7 @@ int main(void)
 		.action = 1,
 		.text = "",
 		.children = menu_main_children,
-		.n_children = 4,
+		.n_children = 5,
 		.f = NULL
 	};
 	menu_main = &menu;
@@ -85,6 +93,7 @@ int main(void)
 	Tama_state tama_state;
 	state = &tama_state;
 	state->level = 3;
+	state->mood = 0;
 	
 	setup();
 	
@@ -256,7 +265,10 @@ ISR (INT0_vect) // On button pressed interrupt
 	// Disable INT0 interrupt
 	EIMSK &= ~(1 << INT0);
 	
+	_delay_ms(5); // Защита от дребезга
+	
 	uint8_t res = check_buttons_pressed();
+	while (check_buttons_pressed()) _delay_ms(5);
 	
 	if (res != 0)
 	{

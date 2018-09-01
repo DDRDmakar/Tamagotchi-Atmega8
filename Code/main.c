@@ -91,13 +91,11 @@ int main(void)
 	// Loops 5 times per second
 	for (;;) //  ;_;
 	{
-		// get_time();
-		
-		unsigned int x = RAND[longtime % RANDOM_ARRAY_SIZE] % 52;
-		unsigned int y = RAND[longtime % RANDOM_ARRAY_SIZE] % 16;
-		
 		int j = 0;
 		uint8_t direction = 0;
+		
+		unsigned int x = 0;
+		unsigned int y = 0;
 		
 		for(unsigned int i = 0; i < 19; ++i)
 		{
@@ -124,6 +122,8 @@ int main(void)
 			{
 				i = 0;
 				if (!flags.info_is_displayed && !flags.menu_is_displayed) clear_creature_region(x, y);
+				x = RAND[longtime % RANDOM_ARRAY_SIZE] % 52;
+				y = RAND[longtime % RANDOM_ARRAY_SIZE] % 16;
 			}
 			
 			_delay_ms(500);

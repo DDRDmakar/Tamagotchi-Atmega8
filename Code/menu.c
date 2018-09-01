@@ -133,7 +133,6 @@ void on_menu(Menu* menu)
 		
 		else if (flags.button_pressed == 8) // menu
 		{
-			PORTC |= _BV(PC2);
 			flags.button_pressed = 0;
 			flags.menu_is_displayed = 0;
 			flags.info_is_displayed = 0;

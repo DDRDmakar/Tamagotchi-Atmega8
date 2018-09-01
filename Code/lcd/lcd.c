@@ -16,6 +16,7 @@
 #include <avr/pgmspace.h>
 #include <avr/io.h>
 #include <util/delay.h>
+#include <avr/interrupt.h>
 #include "nokia5110_chars.h"
 
 
@@ -192,6 +193,8 @@ void nokia_lcd_set_cursor(uint8_t x, uint8_t y)
 
 void nokia_lcd_render(void)
 {
+	cli(); //  Disable global interrupts
+	
 	register unsigned i;
 	/* Set column and row to 0 */
 	write_cmd(0x80);
@@ -200,4 +203,6 @@ void nokia_lcd_render(void)
 	/* Write screen to display */
 	for (i = 0; i < 504; i++)
 		write_data(nokia_lcd.screen[i]);
+	
+	sei(); //  Enable global interrupts
 }

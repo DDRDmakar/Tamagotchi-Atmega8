@@ -62,3 +62,21 @@ void display_picture(const uint8_t* pgm_bytes, unsigned x, unsigned y, unsigned 
 	lcd_set_region(0, x, y, x + frame_x - 1, y + frame_y - 1);
 	display_picture_transparent(pgm_bytes, x, y, frame_x, frame_y);
 }
+
+void bad_parameter_signal(int param)
+{
+	switch (param)
+	{
+		case 0:
+		{
+			LED_RED_OFF;
+			break;
+		}
+		
+		default:
+		{
+			LED_RED_ON;
+			break;
+		}
+	};
+}

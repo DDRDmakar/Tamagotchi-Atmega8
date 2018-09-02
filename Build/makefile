@@ -19,18 +19,18 @@ CFLAGS_AVRDUDE = -c $(INTERFACE) -p $(MMCU_AVRDUDE) -P $(DEVICE) -b $(SPEED)
 prog: main.o lcd.o rtc.o time.o display.o menu.o
 	$(CC) $(CFLAGS) -o prog main.o lcd.o rtc.o time.o display.o menu.o
 
-main.o: $(DIR)main.c $(DIR)main.h $(DIR)defines.h $(DIR)rtc/rtc.h $(DIR)lcd/nokia5110.h $(DIR)display.h $(DIR)menu.h
+main.o: $(DIR)main.c $(DIR)main.h $(DIR)defines.h $(DIR)rtc/rtc.h $(DIR)lcd/nokia5110.h $(DIR)display.h $(DIR)menu.h $(DIR)time.h
 	$(CC) $(CFLAGS) -c $(DIR)main.c
 
 rtc.o: $(DIR)rtc/rtc.c $(DIR)rtc/rtc.h
 	$(CC) $(CFLAGS) -c $(DIR)rtc/rtc.c
-time.o: $(DIR)time.c $(DIR)time.h $(DIR)rtc/rtc.h
-	$(CC) $(CFLAGS) -c $(DIR)time.c
 lcd.o: $(DIR)lcd/lcd.c $(DIR)lcd/nokia5110.h $(DIR)lcd/nokia5110_chars.h
 	$(CC) $(CFLAGS) -c $(DIR)lcd/lcd.c
-display.o: $(DIR)display.c $(DIR)display.h $(DIR)lcd/nokia5110.h $(DIR)defines.h
+time.o: $(DIR)time.c $(DIR)time.h $(DIR)rtc/rtc.h
+	$(CC) $(CFLAGS) -c $(DIR)time.c
+display.o: $(DIR)display.c $(DIR)display.h $(DIR)lcd/nokia5110.h $(DIR)defines.h $(DIR)creatures.h
 	$(CC) $(CFLAGS) -c $(DIR)display.c
-menu.o: $(DIR)menu.c $(DIR)menu.h $(DIR)lcd/nokia5110.h $(DIR)defines.h $(DIR)display.h $(DIR)graphics.h
+menu.o: $(DIR)menu.c $(DIR)menu.h $(DIR)main.h $(DIR)lcd/nokia5110.h $(DIR)defines.h $(DIR)display.h $(DIR)graphics.h
 	$(CC) $(CFLAGS) -c $(DIR)menu.c
 
 hex: prog

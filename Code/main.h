@@ -2,17 +2,22 @@
 #ifndef __MAIN
 #define __MAIN
 
+#define MAX_STATE_VALUE 18
+#define MIN_STATE_VALUE -18
+
 typedef struct Tama_state
 {
+	// Longtime is global
 	unsigned int level; // Tamagochi creature level (from 0 to N)
-	
-	unsigned int k; // Next level length coefficient
+	// Next level time = current level time + current level time / 2
+	uint64_t cur_level; // Current level points
 	uint64_t prev_level; // Previous level time
 	
-	int health; // Creature health (from -6 to 6)
-	int food;   // Creature hunger level (from -6 to 6) -6=hungry 6=fed
-	int mood;   // Creature mood level (from -6 to 6)
-	int cleanness; // Creature cleanness level (from -12 to 12)
+	
+	int health; // Creature health (from -18 to 18)               -18=dead            0=ill     18=healthy
+	int food;   // Creature hunger level (from -18 to 18)         -18=dead            0=hungry  18=fed
+	int mood;   // Creature mood level (from -18 to 18)           -18=zero_level_time 0=sad     18=happy
+	int cleanness; // Creature cleanness level (from -18 to 18)   -18=ill             0=dirty   18=clean
 	
 } Tama_state;
 
@@ -21,7 +26,8 @@ typedef struct Flags
 	uint8_t
 	info_is_displayed,
 	button_pressed,
-	menu_is_displayed;
+	menu_is_displayed,
+	parameter_is_bad;
 } Flags;
 
 extern uint64_t longtime;

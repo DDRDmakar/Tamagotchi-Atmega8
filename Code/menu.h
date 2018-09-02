@@ -20,6 +20,7 @@ typedef struct Menu
 
 void menu_render(void);
 void on_menu(Menu* menu);
+void die(void);
 
 uint8_t display_info(void);
 uint8_t display_shower(void);

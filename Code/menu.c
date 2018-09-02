@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <util/delay.h>
+#include <avr/interrupt.h>
 
 #include "menu.h"
 #include "main.h"
@@ -200,7 +201,8 @@ uint8_t choose_food(void)
 			nokia_lcd_clear();
 			nokia_lcd_render();
 			
-			// Feed creature norm
+			// Feed
+			state->food = MAX_STATE_VALUE;
 			
 			display_happy_creature();
 			
@@ -232,14 +234,34 @@ uint8_t display_info(void)
 	
 	nokia_lcd_clear();
 	
-	nokia_lcd_set_cursor(3, 3);
+	nokia_lcd_set_cursor(0, 0);
 	ultoa(longtime, num, 16);
 	nokia_lcd_write_string("XP: 0x", 1);
 	nokia_lcd_write_string(num, 1);
 	
-	nokia_lcd_set_cursor(3, 12); // 7 pixels for character + 2 free pixels
+	nokia_lcd_set_cursor(0, 8); // 7 pixels for character + 1 free pixel
 	ultoa(state->level, num, 10);
 	nokia_lcd_write_string("level: ", 1);
+	nokia_lcd_write_string(num, 1);
+	
+	nokia_lcd_set_cursor(0, 16);
+	itoa(state->health, num, 10);
+	nokia_lcd_write_string("health: ", 1);
+	nokia_lcd_write_string(num, 1);
+	
+	nokia_lcd_set_cursor(0, 24);
+	itoa(state->food, num, 10);
+	nokia_lcd_write_string("food: ", 1);
+	nokia_lcd_write_string(num, 1);
+	
+	nokia_lcd_set_cursor(0, 32);
+	itoa(state->mood, num, 10);
+	nokia_lcd_write_string("happiness: ", 1);
+	nokia_lcd_write_string(num, 1);
+	
+	nokia_lcd_set_cursor(0, 40);
+	itoa(state->cleanness, num, 10);
+	nokia_lcd_write_string("cleanness: ", 1);
 	nokia_lcd_write_string(num, 1);
 	
 	nokia_lcd_render();
@@ -256,6 +278,8 @@ uint8_t display_shower(void)
 	nokia_lcd_render();
 	_delay_ms(3000); // Display shower for 3 seconds
 	nokia_lcd_clear(); // Empty screen
+	
+	state->cleanness = MAX_STATE_VALUE;
 	
 	display_happy_creature();
 	
@@ -299,6 +323,8 @@ uint8_t display_healing(void)
 		_delay_ms(200); // Display shower for 3 seconds
 		nokia_lcd_clear(); // Empty screen
 	}
+	
+	state->health = MAX_STATE_VALUE;
 	
 	display_happy_creature();
 	
@@ -388,7 +414,7 @@ uint8_t play_with_creature(void)
 				++creature_x;
 				PLAY_DRAW_CREATURE;
 				nokia_lcd_render();
-				if (state->mood < 12 && (counter2 % 10 == 0)) ++state->mood;
+				if (state->mood < MAX_STATE_VALUE && (counter2 % 8 == 0)) ++state->mood;
 				++counter2;
 			}
 			else if (delta_x < 0 && creature_x >= 2)
@@ -398,11 +424,11 @@ uint8_t play_with_creature(void)
 				--creature_x;
 				PLAY_DRAW_CREATURE;
 				nokia_lcd_render();
-				if (state->mood < 12 && (counter2 % 10 == 0)) ++state->mood;
+				if (state->mood < MAX_STATE_VALUE && (counter2 % 8 == 0)) ++state->mood;
 				++counter2;
 			}
 			
-			if (state->mood >= 12)
+			if (state->mood >= MAX_STATE_VALUE)
 			{
 				nokia_lcd_clear();
 				display_happy_creature();
@@ -416,4 +442,19 @@ uint8_t play_with_creature(void)
 	nokia_lcd_render();
 	
 	return 1;
+}
+
+void die(void)
+{
+	nokia_lcd_clear(); // Empty screen
+	display_picture(GRAPHICS_FULL[GRAPHICS_LOSESCREEN_INDEX], 0, 0, 80, 48);
+	
+	nokia_lcd_render();
+	
+	cli(); //  Disable global interrupts
+	
+	for(;;)
+	{
+		_delay_ms(1000);
+	}
 }

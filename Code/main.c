@@ -16,7 +16,7 @@ const uint16_t* RAND;
 
 uint8_t *idp; // Time storage pointer
 uint64_t longtime; // Absolute seconds count
-Flags flags = {0, 0, 0};
+Flags flags = {0, 0, 0, 0};
 Menu* menu_main;
 Tama_state* state;
 
@@ -90,10 +90,19 @@ int main(void)
 	uint8_t timedigits[7] = {0, 0, 0, 0, 0, 0, 0};
 	idp = timedigits;
 	
-	Tama_state tama_state;
+	// Set up tamagotchi state
+	Tama_state tama_state =
+	{
+		.health =    11,
+		.food =      11,
+		.mood =      11,
+		.cleanness = 11,
+		
+		.level = 0,
+		.cur_level = 0,
+		.prev_level = 0
+	};
 	state = &tama_state;
-	state->level = 3;
-	state->mood = 0;
 	
 	setup();
 	
@@ -111,6 +120,7 @@ int main(void)
 			if (!flags.info_is_displayed && !flags.menu_is_displayed)
 			{
 				if (!flags.info_is_displayed && !flags.menu_is_displayed) display_creature(state->level, j, x, y);
+				
 				if (direction) // Reverse loop
 				{
 					if (j > 0) --j;
@@ -118,8 +128,8 @@ int main(void)
 				}
 				else
 				{
-					if (j < 2) ++j;
-					if (j >= 2) direction = 1;
+					if (j < N_FRAMES_PER_CREATURE-1) ++j;
+					if (j >= N_FRAMES_PER_CREATURE-1) direction = 1;
 				}
 				
 				if (!flags.info_is_displayed && !flags.menu_is_displayed) nokia_lcd_render();
@@ -237,17 +247,20 @@ void setup(void)
 	
 	// Blink leds on startup
 	_delay_ms(250);
-	PORTC |= _BV(PC0);
+	LED_RED_ON;
 	_delay_ms(250);
-	PORTC |= _BV(PC1);
+	LED_BLUE_ON;
 	_delay_ms(250);
-	PORTC |= _BV(PC2);
+	LED_WHITE_ON;
 	_delay_ms(250);
-	PORTC &= ~_BV(PC0);
-	PORTC &= ~_BV(PC1);
-	PORTC &= ~_BV(PC2);
+	LED_RED_OFF;
+	LED_BLUE_OFF;
+	LED_WHITE_OFF;
 	_delay_ms(250);
 }
+
+
+#define ENZERO_CUR_LEVEL state->cur_level = 0; longtime = state->prev_level;
 
 ISR (TIMER1_COMPA_vect) // Every second interrupt
 {
@@ -258,6 +271,99 @@ ISR (TIMER1_COMPA_vect) // Every second interrupt
 	PORTC |= _BV(PC1);
 	_delay_ms(1);
 	PORTC &= ~_BV(PC1);
+	
+	
+	++state->cur_level;
+	
+	// Decrement creature parameters
+	if (!(longtime % STATE_PERIOD_HEALTH)) --state->health;
+	if (!(longtime % STATE_PERIOD_FOOD)) --state->food;
+	if (!(longtime % STATE_PERIOD_MOOD)) --state->mood;
+	if (!(longtime % STATE_PERIOD_CLEANNESS)) --state->cleanness;
+	
+	// Check parameters and decrement again
+	if (state->health <= 0)
+	{
+		if (state->health < MIN_STATE_VALUE)
+		{
+			die();
+		}
+		else
+		{
+			bad_parameter_signal(1);
+			
+			if (state->health < MIN_BAD_THRESHOLD_HEALTH) {ENZERO_CUR_LEVEL}
+		}
+	}
+	
+	
+	else if (state->food <= 0)
+	{
+		if (state->food < MIN_STATE_VALUE)
+		{
+			die();
+		}
+		else
+		{
+			if (!(longtime % STATE_PERIOD_HEALTH) && state->health >= -12) --state->health;
+			if (!(longtime % STATE_PERIOD_MOOD) && state->mood >= -15) --state->mood;
+			bad_parameter_signal(2);
+			
+			if (state->food < MIN_BAD_THRESHOLD_FOOD) {ENZERO_CUR_LEVEL}
+		}
+	}
+	
+	
+	else if (state->mood <= 0)
+	{
+		if (state->mood < MIN_STATE_VALUE || state->mood < MIN_BAD_THRESHOLD_MOOD)
+		{
+			ENZERO_CUR_LEVEL
+		}
+		else
+		{
+			if (!(longtime % STATE_PERIOD_HEALTH) && state->health >= -12) --state->health;
+			bad_parameter_signal(3);
+			
+			if (state->mood < MIN_BAD_THRESHOLD_MOOD) {ENZERO_CUR_LEVEL}
+		}
+	}
+	
+	
+	else if (state->cleanness <= 0)
+	{
+		if (state->cleanness < MIN_STATE_VALUE)
+		{
+			die();
+		}
+		else
+		{
+			if (!(longtime % STATE_PERIOD_HEALTH) && state->health >= -12) --state->health;
+			if (!(longtime % STATE_PERIOD_MOOD) && state->mood >= -15) --state->mood;
+			bad_parameter_signal(4);
+			
+			if (state->cleanness < MIN_BAD_THRESHOLD_CLEANNESS) {ENZERO_CUR_LEVEL}
+		}
+	}
+	
+	else { bad_parameter_signal(0); } // Ewerything is fine, disable signal
+	
+	
+	if ( // If creature is ready for next level
+		(
+			(state->level != 0 && (state->cur_level > state->prev_level + (state->prev_level / 2))) ||
+			(state->level == 0 && longtime == 180) // 3 min = 180 sec
+		)
+		&& 
+		(
+			state->level < N_LEVELS
+		)
+	)
+	{
+		++state->level;
+		state->cur_level = 0;
+		state->prev_level = longtime;
+	}
 } 
 
 ISR (INT0_vect) // On button pressed interrupt
@@ -268,7 +374,7 @@ ISR (INT0_vect) // On button pressed interrupt
 	_delay_ms(5); // Защита от дребезга
 	
 	uint8_t res = check_buttons_pressed();
-	while (check_buttons_pressed()) _delay_ms(5);
+	while (check_buttons_pressed()) _delay_ms(5); // Защита от дребезга
 	
 	if (res != 0)
 	{

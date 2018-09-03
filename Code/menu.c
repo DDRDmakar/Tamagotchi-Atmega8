@@ -154,7 +154,6 @@ void on_menu(Menu* menu)
 uint8_t choose_food(void)
 {
 	flags.button_pressed = 0;
-	flags.menu_is_displayed = 0;
 	flags.info_is_displayed = 1;
 	
 	nokia_lcd_clear(); // Empty screen
@@ -213,7 +212,6 @@ uint8_t choose_food(void)
 		{
 			_leave_food_choice:
 			flags.button_pressed = 0;
-			flags.menu_is_displayed = 0;
 			flags.info_is_displayed = 0;
 			nokia_lcd_clear();
 			nokia_lcd_render();
@@ -271,6 +269,8 @@ uint8_t display_info(void)
 
 uint8_t display_shower(void)
 {
+	flags.info_is_displayed = 1;
+	
 	nokia_lcd_clear(); // Empty screen
 	display_creature(state->level, 0, 27, 15); // Draw creature on the floor
 	display_picture_transparent(GRAPHICS_FULL[GRAPHICS_SHOWER_INDEX], 0, 0, 80, 48); // Draw shower (transparent)
@@ -282,6 +282,8 @@ uint8_t display_shower(void)
 	state->cleanness = MAX_STATE_VALUE;
 	
 	display_happy_creature();
+	
+	flags.info_is_displayed = 0;
 	
 	return 1; // Leave menu
 }
@@ -313,6 +315,8 @@ void display_happy_creature(void)
 
 uint8_t display_healing(void)
 {
+	flags.info_is_displayed = 1;
+	
 	nokia_lcd_clear(); // Empty screen
 	
 	for (int i = 0; i < 10; ++i)
@@ -327,6 +331,9 @@ uint8_t display_healing(void)
 	state->health = MAX_STATE_VALUE;
 	
 	display_happy_creature();
+	
+	
+	flags.info_is_displayed = 0;
 	
 	return 1; // Leave menu
 }
@@ -347,7 +354,6 @@ uint8_t display_healing(void)
 uint8_t play_with_creature(void)
 {
 	flags.button_pressed = 0;
-	flags.menu_is_displayed = 0;
 	flags.info_is_displayed = 1;
 	
 	unsigned int creature_x = 26;
@@ -396,7 +402,6 @@ uint8_t play_with_creature(void)
 		{
 			_leave_creature_play:
 			flags.button_pressed = 0;
-			flags.menu_is_displayed = 0;
 			flags.info_is_displayed = 0;
 			nokia_lcd_clear();
 			nokia_lcd_render();

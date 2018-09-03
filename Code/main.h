@@ -21,6 +21,18 @@ typedef struct Tama_state
 	
 } Tama_state;
 
+#define INIT_TAMA_STATE \
+{ \
+	.health =    11, \
+	.food =      11, \
+	.mood =      11, \
+	.cleanness = 11, \
+	 \
+	.level = 0, \
+	.cur_level = 0, \
+	.prev_level = 0 \
+}
+
 typedef struct Flags
 {
 	uint8_t

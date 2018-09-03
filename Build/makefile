@@ -16,10 +16,10 @@ DIR  = ../Code/
 CFLAGS := -mmcu=$(MMCU_GCC) -Os -pedantic -Wextra -Wall -std=c11 -DF_CPU=$(FREQ_CPU)UL
 CFLAGS_AVRDUDE = -c $(INTERFACE) -p $(MMCU_AVRDUDE) -P $(DEVICE) -b $(SPEED)
 
-prog: main.o lcd.o rtc.o time.o display.o menu.o
-	$(CC) $(CFLAGS) -o prog main.o lcd.o rtc.o time.o display.o menu.o
+prog: main.o lcd.o rtc.o time.o display.o menu.o eeprom.o
+	$(CC) $(CFLAGS) -o prog main.o lcd.o rtc.o time.o display.o menu.o eeprom.o
 
-main.o: $(DIR)main.c $(DIR)main.h $(DIR)defines.h $(DIR)rtc/rtc.h $(DIR)lcd/nokia5110.h $(DIR)display.h $(DIR)menu.h $(DIR)time.h
+main.o: $(DIR)main.c $(DIR)main.h $(DIR)defines.h $(DIR)rtc/rtc.h $(DIR)lcd/nokia5110.h $(DIR)display.h $(DIR)menu.h $(DIR)time.h $(DIR)eeprom.h
 	$(CC) $(CFLAGS) -c $(DIR)main.c
 
 rtc.o: $(DIR)rtc/rtc.c $(DIR)rtc/rtc.h
@@ -32,9 +32,12 @@ display.o: $(DIR)display.c $(DIR)display.h $(DIR)lcd/nokia5110.h $(DIR)defines.h
 	$(CC) $(CFLAGS) -c $(DIR)display.c
 menu.o: $(DIR)menu.c $(DIR)menu.h $(DIR)main.h $(DIR)lcd/nokia5110.h $(DIR)defines.h $(DIR)display.h $(DIR)graphics.h
 	$(CC) $(CFLAGS) -c $(DIR)menu.c
+eeprom.o: $(DIR)eeprom.c $(DIR)eeprom.h $(DIR)main.h
+	$(CC) $(CFLAGS) -c $(DIR)eeprom.c
 
 hex: prog
-	avr-objcopy -O ihex prog prog.hex
+	avr-size -C --mcu=$(MMCU_GCC) prog
+	avr-objcopy -R .eeprom -O ihex prog prog.hex
 upload: hex
 	avrdude $(CFLAGS_AVRDUDE) -U flash:w:prog.hex
 

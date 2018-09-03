@@ -4,17 +4,32 @@
 #include "lcd/nokia5110.h"
 #include "creatures.h"
 
-void display_creature(unsigned level, unsigned frame, unsigned x_coord, unsigned y_coord)
+void display_creature(int level, unsigned frame, unsigned x_coord, unsigned y_coord)
 {
+	static int mem_level = -1;
+	static uint8_t CREATUREFRAME_RAM[N_FRAMES_PER_CREATURE][BYTES_PER_CREATURE_FRAME];
+	if (mem_level != level)
+	{
+		for (unsigned int i = 0; i < N_FRAMES_PER_CREATURE; ++i)
+		{
+			for (unsigned int j = 0; j < BYTES_PER_CREATURE_FRAME; ++j)
+			{
+				CREATUREFRAME_RAM[i][j] = pgm_read_byte(&CREATUREFRAME[level % N_LEVELS][i][j]);
+			}
+		}
+		
+		mem_level = level;
+	}
+	
 	clear_creature_region(x_coord, y_coord);
-	const uint8_t* img = CREATUREFRAME[level % N_LEVELS][frame % N_FRAMES_PER_CREATURE];
+	const uint8_t* img = CREATUREFRAME_RAM[frame % N_FRAMES_PER_CREATURE];
 	unsigned int bit_counter;
 	for (unsigned int i = 0; i < BYTES_PER_CREATURE_FRAME; ++i) // Iterate through bytes
 	{
 		bit_counter = 0;
 		for (uint8_t j = 0x80; j > 0; j >>= 1)
 		{
-			nokia_lcd_set_pixel(x_coord + ((i % 4)*8) + bit_counter, y_coord + (i / 4), pgm_read_byte(&img[i]) & j);
+			nokia_lcd_set_pixel(x_coord + ((i % 4)*8) + bit_counter, y_coord + (i / 4), img[i] & j);
 			++bit_counter;
 		}
 	}

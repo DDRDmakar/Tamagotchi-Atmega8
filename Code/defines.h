@@ -19,7 +19,7 @@ extern const uint16_t* RAND;
 
 // State changing period in seconds
 #define STATE_PERIOD_HEALTH     202 // Independent
-#define STATE_PERIOD_FOOD       50  // Refers to health and mood
+#define STATE_PERIOD_FOOD       95  // Refers to health and mood
 #define STATE_PERIOD_MOOD       99  // Refers to health
 #define STATE_PERIOD_CLEANNESS  104 // Refers to health and mood
 

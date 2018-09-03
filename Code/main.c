@@ -11,6 +11,7 @@
 #include "defines.h"
 #include "display.h"
 #include "menu.h"
+#include "eeprom.h"
 
 const uint16_t* RAND;
 
@@ -34,7 +35,7 @@ int main(void)
 	RAND = randarr;
 	
 	// Main menu nodes
-	Menu menu_main_children[5] = {
+	Menu menu_main_children[7] = {
 		{
 			.action = 0,
 			.text = "Info",
@@ -69,6 +70,20 @@ int main(void)
 			.children = NULL,
 			.n_children = 0,
 			.f = play_with_creature
+		},
+		{
+			.action = 0,
+			.text = "SAVE STATE",
+			.children = NULL,
+			.n_children = 0,
+			.f = eeprom_save
+		},
+		{
+			.action = 0,
+			.text = "LOAD STATE",
+			.children = NULL,
+			.n_children = 0,
+			.f = eeprom_load
 		}
 	};
 	
@@ -78,7 +93,7 @@ int main(void)
 		.action = 1,
 		.text = "",
 		.children = menu_main_children,
-		.n_children = 5,
+		.n_children = 7,
 		.f = NULL
 	};
 	menu_main = &menu;
@@ -91,17 +106,7 @@ int main(void)
 	idp = timedigits;
 	
 	// Set up tamagotchi state
-	Tama_state tama_state =
-	{
-		.health =    11,
-		.food =      11,
-		.mood =      11,
-		.cleanness = 11,
-		
-		.level = 0,
-		.cur_level = 0,
-		.prev_level = 0
-	};
+	Tama_state tama_state = INIT_TAMA_STATE;
 	state = &tama_state;
 	
 	setup();

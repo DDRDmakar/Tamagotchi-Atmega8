@@ -562,17 +562,6 @@ Connection ~ 5700 6150
 Wire Wire Line
 	5700 6150 5700 6000
 $Comp
-L Regulator_Linear:AMS1117 U1
-U 1 1 5E25DF82
-P 2650 1400
-F 0 "U1" H 2650 1642 50  0000 C CNN
-F 1 "AMS1117" H 2650 1551 50  0000 C CNN
-F 2 "Package_TO_SOT_SMD:SOT-223-3_TabPin2" H 2650 1600 50  0001 C CNN
-F 3 "http://www.advanced-monolithic.com/pdf/ds1117.pdf" H 2750 1150 50  0001 C CNN
-	1    2650 1400
-	1    0    0    -1  
-$EndComp
-$Comp
 L power:VCC #PWR05
 U 1 1 5E262D63
 P 3300 1400
@@ -824,6 +813,17 @@ F 1 "S8050" H 5790 5755 50  0000 L CNN
 F 2 "Package_TO_SOT_THT:TO-92_Inline" H 5800 5725 50  0001 L CIN
 F 3 "http://www.unisonic.com.tw/datasheet/S8050.pdf" H 5600 5800 50  0001 L CNN
 	1    5600 5800
+	1    0    0    -1  
+$EndComp
+$Comp
+L Regulator_Linear:LM1117-3.3 U1
+U 1 1 5E32D46F
+P 2650 1400
+F 0 "U1" H 2650 1642 50  0000 C CNN
+F 1 "LM1117-3.3" H 2650 1551 50  0000 C CNN
+F 2 "Package_TO_SOT_THT:TO-220-3_Vertical" H 2650 1400 50  0001 C CNN
+F 3 "http://www.ti.com/lit/ds/symlink/lm1117.pdf" H 2650 1400 50  0001 C CNN
+	1    2650 1400
 	1    0    0    -1  
 $EndComp
 $EndSCHEMATC

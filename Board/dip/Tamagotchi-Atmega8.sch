@@ -761,17 +761,6 @@ Wire Wire Line
 Wire Wire Line
 	5250 2550 5250 2500
 $Comp
-L power:VCC #PWR0101
-U 1 1 5E397814
-P 5250 2500
-F 0 "#PWR0101" H 5250 2350 50  0001 C CNN
-F 1 "VCC" H 5267 2673 50  0000 C CNN
-F 2 "" H 5250 2500 50  0001 C CNN
-F 3 "" H 5250 2500 50  0001 C CNN
-	1    5250 2500
-	1    0    0    -1  
-$EndComp
-$Comp
 L Timer_RTC:DS1307+ U3
 U 1 1 5E29CC49
 P 7600 1950
@@ -825,5 +814,16 @@ F 2 "Package_TO_SOT_THT:TO-220-3_Vertical" H 2650 1400 50  0001 C CNN
 F 3 "http://www.ti.com/lit/ds/symlink/lm1117.pdf" H 2650 1400 50  0001 C CNN
 	1    2650 1400
 	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 5E3AA177
+P 5250 2500
+F 0 "#PWR?" H 5250 2250 50  0001 C CNN
+F 1 "GND" H 5255 2327 50  0000 C CNN
+F 2 "" H 5250 2500 50  0001 C CNN
+F 3 "" H 5250 2500 50  0001 C CNN
+	1    5250 2500
+	-1   0    0    1   
 $EndComp
 $EndSCHEMATC
